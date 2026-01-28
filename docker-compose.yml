@@ -5,10 +5,12 @@ services:
     build: .
     container_name: jobhunter-agent
     
-    # Environment variables
+    # Load environment variables from .env (preferred)
+    env_file:
+      - .env
+
+    # Additional container-level environment variables
     environment:
-      # OpenAI API key - set via environment or .env file
-      OPENAI_API_KEY: ${OPENAI_API_KEY}
       PYTHONUNBUFFERED: 1
     
     # Mount the entire repo for development (optional)

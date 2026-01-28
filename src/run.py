@@ -12,6 +12,9 @@ from typing import Dict, Any
 
 from openai import OpenAI
 
+# The OpenAI API key is expected via the OPENAI_API_KEY environment variable
+# (for example from a .env file mounted by docker-compose)
+
 # Import the job fetcher
 from fetch_jobs import fetch_jobindex_jobs, get_sample_jobs
 
@@ -43,11 +46,10 @@ job_description: {job_description}
     
     try:
         # Call OpenAI API with the MCP system prompt
-        # We'll use the mcp_system_prompt as the system message
-        api_key = os.getenv("OPENAI_API_KEY")
-        if not api_key:
-            raise ValueError("OPENAI_API_KEY environment variable not set")
-        
+        # Ensure API key is present in environment (fail fast)
+        if not os.getenv("OPENAI_API_KEY"):
+            raise RuntimeError("OPENAI_API_KEY not set in environment; set it via .env or environment variables")
+
         # Read the MCP prompt
         mcp_path = "/app/evaluate_job.mcp"
         if not os.path.exists(mcp_path):
@@ -56,10 +58,10 @@ job_description: {job_description}
         with open(mcp_path, 'r', encoding='utf-8') as f:
             mcp_system_prompt = f.read()
         
-        # Initialize OpenAI client with API key from environment
-        # New OpenAI SDK handles authentication automatically when api_key is set
-        # Proxies parameter removed - use http/https_proxy environment variables instead
-        client = OpenAI(api_key=api_key)
+        # Initialize OpenAI client. The client will read the API key from
+        # the OPENAI_API_KEY environment variable (no manual api_key setting).
+        # Proxies parameter removed; rely on standard http(s)_proxy env vars if needed.
+        client = OpenAI()
         
         response = client.chat.completions.create(
             model="gpt-4o-mini",
