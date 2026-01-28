@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  jobhunter:
+    build: .
+    container_name: jobhunter-agent
+    
+    # Environment variables
+    environment:
+      # OpenAI API key - set via environment or .env file
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      PYTHONUNBUFFERED: 1
+    
+    # Mount the entire repo for development (optional)
+    volumes:
+      - .:/app
+    
+    # Run the container
+    # Output goes to stdout/stderr, which Docker Compose will display
+    stdin_open: true
+    tty: true
