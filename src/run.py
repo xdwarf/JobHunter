@@ -46,10 +46,6 @@ job_description: {job_description}
     
     try:
         # Call OpenAI API with the MCP system prompt
-        # Ensure API key is present in environment (fail fast)
-        if not os.getenv("OPENAI_API_KEY"):
-            raise RuntimeError("OPENAI_API_KEY not set in environment; set it via .env or environment variables")
-
         # Read the MCP prompt
         mcp_path = "/app/evaluate_job.mcp"
         if not os.path.exists(mcp_path):
@@ -58,9 +54,18 @@ job_description: {job_description}
         with open(mcp_path, 'r', encoding='utf-8') as f:
             mcp_system_prompt = f.read()
         
-        # Initialize OpenAI client. The client will read the API key from
-        # the OPENAI_API_KEY environment variable (no manual api_key setting).
-        # Proxies parameter removed; rely on standard http(s)_proxy env vars if needed.
+        # Debug: inspect OPENAI_API_KEY presence without leaking it
+        # Fetch key from environment and fail fast if missing
+        api_key = os.getenv("OPENAI_API_KEY")
+        if not api_key:
+            # Explicit, clear error when the key is missing
+            raise RuntimeError("OPENAI_API_KEY not set")
+
+        # Print only prefix and length for debugging (do NOT print the full key)
+        print(f"OPENAI_API_KEY detected: prefix={api_key[:8]} length={len(api_key)}", file=sys.stderr)
+
+        # Initialize OpenAI client. The client will use the environment-provided API key.
+        # No manual api_key assignment or overrides are used here.
         client = OpenAI()
         
         response = client.chat.completions.create(
