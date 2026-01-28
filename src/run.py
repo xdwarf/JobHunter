@@ -8,8 +8,9 @@ Fetches jobs, evaluates them using MCP prompt, and outputs JSON results.
 import json
 import os
 import sys
-import subprocess
 from typing import Dict, Any
+
+from openai import OpenAI
 
 # Import the job fetcher
 from fetch_jobs import fetch_jobindex_jobs, get_sample_jobs
@@ -55,9 +56,10 @@ job_description: {job_description}
         with open(mcp_path, 'r', encoding='utf-8') as f:
             mcp_system_prompt = f.read()
         
-        # Use OpenAI API
-        import openai
-        client = openai.OpenAI(api_key=api_key)
+        # Initialize OpenAI client with API key from environment
+        # New OpenAI SDK handles authentication automatically when api_key is set
+        # Proxies parameter removed - use http/https_proxy environment variables instead
+        client = OpenAI(api_key=api_key)
         
         response = client.chat.completions.create(
             model="gpt-4o-mini",
