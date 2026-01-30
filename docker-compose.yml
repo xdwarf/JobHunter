@@ -4,7 +4,7 @@ services:
   jobhunter:
     build: .
     container_name: jobhunter-agent
-    
+
     # Load environment variables from .env (preferred)
     env_file:
       - .env
@@ -12,12 +12,16 @@ services:
     # Additional container-level environment variables
     environment:
       PYTHONUNBUFFERED: 1
-    
-    # Mount the entire repo for development (optional)
+
+    # Mount the repository for development and mount a dedicated data volume for persistence
     volumes:
       - .:/app
-    
-    # Run the container
-    # Output goes to stdout/stderr, which Docker Compose will display
+      - ./data:/app/data
+
+    # Expose the web UI port
+    ports:
+      - "5500:5500"
+
+    # Keep stdin open for debugging if desired
     stdin_open: true
     tty: true
