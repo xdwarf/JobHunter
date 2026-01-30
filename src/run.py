@@ -116,6 +116,36 @@ job_description: {job_description}
         return evaluation
     
     except Exception as e:
+        # 429 håndteres særskilt så vi logger en klar besked, returnerer en eksplicit "quota exceeded" evaluation
+        # og fortsætter til næste job i køen uden at afslutte hele processen.
+        err_str = str(e).lower()
+        err_code = None
+        # Nogle OpenAI-klientfejl eksponerer status/kode på forskellige attributter
+        for attr in ("status", "status_code", "http_status", "code"):
+            if hasattr(e, attr):
+                try:
+                    val = getattr(e, attr)
+                    if isinstance(val, int) and val == 429:
+                        err_code = 429
+                        break
+                    if isinstance(val, str) and val.isdigit() and int(val) == 429:
+                        err_code = 429
+                        break
+                except Exception:
+                    pass
+
+        if "429" in err_str or "insufficient_quota" in err_str or err_code == 429:
+            # Menneskelig venlig logbesked for quota-problemer
+            print("OpenAI quota exceeded – check billing for project", file=sys.stderr)
+            # Returnér klart signal i evaluation så downstream kan skelne denne fejl
+            return {
+                "relevant": False,
+                "score": 0.0,
+                "category": "Other",
+                "reason": "OpenAI quota exceeded"
+            }
+
+        # Fallback: behold eksisterende generiske fejl-output for andre fejl
         print(f"Error evaluating job: {e}", file=sys.stderr)
         # Return neutral evaluation on error
         return {
