@@ -1,0 +1,97 @@
+/* Minimalist, homey-inspired stylesheet - no heavy colors, airy spacing */
+
+:root{
+  --bg: #f6f8f9;
+  --muted: #6b7280;
+  --text: #0f1722;
+  --card-bg: #ffffff;
+  --accent: #10b981; /* subtle green */
+  --soft-shadow: 0 1px 6px rgba(2,6,23,0.06);
+}
+
+html,body{
+  height:100%;
+}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+
+.container{
+  max-width:1100px;
+  margin:32px auto;
+  padding:24px;
+}
+
+.nav{
+  display:flex;
+  gap:14px;
+  margin-bottom:18px;
+}
+.nav a{
+  color:var(--muted);
+  text-decoration:none;
+  padding:6px 8px;
+  border-radius:6px;
+  font-weight:600;
+}
+.nav a.active{ /* subtle active marker */
+  color:var(--text);
+}
+.nav a.active::after{
+  content:'';
+  display:block;
+  height:3px;
+  width:100%;
+  background: rgba(16,185,129,0.12);
+  border-radius:2px;
+  margin-top:6px;
+}
+
+.header{margin-bottom:20px}
+.header p{color:var(--muted); margin-top:6px}
+
+.actions{margin-bottom:18px}
+.btn{
+  display:inline-block;
+  padding:8px 12px;
+  background:var(--accent);
+  color:white;
+  border-radius:8px;
+  text-decoration:none;
+  font-weight:600;
+}
+
+.card{
+  background:var(--card-bg);
+  border-radius:10px;
+  box-shadow:var(--soft-shadow);
+  padding:16px;
+  margin-bottom:12px;
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  transition:transform .08s ease, box-shadow .08s ease;
+}
+.card:hover{ transform: translateY(-2px); box-shadow: 0 6px 20px rgba(2,6,23,0.06); }
+
+.card.relevant{ border-left:6px solid var(--accent); }
+.card.not-relevant{ border-left:6px solid #e6e9ee; }
+
+.job-left{flex:1 1 auto; padding-right:12px}
+.job-right{flex:0 0 auto; text-align:right; min-width:100px}
+
+.job-title{ font-size:1.05rem; font-weight:700; color:var(--text); text-decoration:none }
+.job-meta{ color:var(--muted); font-size:0.92rem; margin-top:6px }
+.job-reason{ margin-top:10px; color:#111827 }
+.score{ font-weight:700; color:var(--text) }
+
+/* Responsive tweaks */
+@media (max-width:720px){
+  .card{ flex-direction:column; align-items:flex-start }
+  .job-right{ text-align:left; margin-top:10px; min-width:unset }
+}

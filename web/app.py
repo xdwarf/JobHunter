@@ -13,48 +13,53 @@ TEMPLATE = """
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>JobHunter - Jobs</title>
-    <style>
-      body { font-family: Arial, sans-serif; margin: 40px; background:#f7f9fb; }
-      .container { max-width: 900px; margin: 0 auto; }
-      .nav { margin-bottom: 16px; }
-      .nav a { margin-right: 12px; text-decoration: none; color: #2c3e50; font-weight: bold; }
-      .job { background: #fff; border-radius: 6px; padding: 16px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
-      .meta { font-size: 0.9em; color: #444; }
-      .title { font-size: 1.1em; font-weight: bold; margin-bottom: 6px; }
-      .score { float: right; font-weight: bold; }
-      .reason { margin-top: 8px; color: #222; }
-      .relevant { color: green; font-weight: bold; }
-      .not-relevant { color: #c0392b; font-weight: bold; }
-      header { margin-bottom: 12px; }
-      .actions { margin-bottom: 18px; }
-      .btn { display: inline-block; padding: 8px 12px; background:#2c7; color:#fff; border-radius:4px; text-decoration:none; }
-    </style>
+    <title>JobHunter</title>
+
+    <!-- Homey-inspireret styling -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
   </head>
+
   <body>
     <div class="container">
-      <div class="nav"><a href="/">Dashboard</a><a href="/settings">Indstillinger</a></div>
+
+      <!-- Navigation -->
+      <div class="nav">
+        <a href="/" class="active">Dashboard</a>
+        <a href="/settings">Indstillinger</a>
+      </div>
+
+      <!-- Header -->
       <header>
-        <h1>JobHunter — Gemte job</h1>
-        <p>Liste over gemte job fra <code>data/jobs.json</code>. Sorteret: relevante først, højeste score øverst.</p>
+        <h1>JobHunter</h1>
+        <p>Gemte job vurderet af din personlige AI-jobagent.</p>
       </header>
 
+      <!-- Actions -->
       <div class="actions">
-        <form action="/update" method="post" style="display:inline;">
-          <button class="btn" type="submit">Kør job-agent nu</button>
+        <form action="/update" method="post">
+          <button class="btn" type="submit">Opdater jobs nu</button>
         </form>
       </div>
 
+      <!-- Job cards -->
       {% for job in jobs %}
-      <div class="job">
-        <div>
-          <a class="title" href="{{ job.url }}" target="_blank">{{ job.job_title or '–' }}</a>
-          <!-- Avoid using Jinja string-formatting (|format or %) here as it can raise TypeError during rendering.
-               If you need rounding/formatting, prepare a display string in Python before rendering the template. -->
-          <span class="score">Score: {{ job.evaluation.score or "" }}</span>
+      <div class="card {{ 'relevant' if job.evaluation.relevant else 'not-relevant' }}">
+
+        <div class="job-title">
+          <a href="{{ job.url }}" target="_blank">
+            {{ job.job_title or '–' }}
+          </a>
         </div>
-        <div class="meta">{{ job.company or '–' }} — {{ job.location or '–' }} &nbsp;|&nbsp; <span class="{{ 'relevant' if job.evaluation.relevant else 'not-relevant' }}">{{ 'Relevant' if job.evaluation.relevant else 'Ikke relevant' }}</span></div>
-        <div class="reason">{{ job.evaluation.reason or "" }}</div>
+
+        <div class="job-meta">
+          {{ job.company or '–' }} · {{ job.location or '–' }}
+          · <span class="score">Score {{ job.evaluation.score }}</span>
+        </div>
+
+        <div class="job-reason">
+          {{ job.evaluation.reason or '' }}
+        </div>
+
       </div>
       {% endfor %}
 
@@ -62,6 +67,7 @@ TEMPLATE = """
   </body>
 </html>
 """
+
 
 
 def load_jobs():
