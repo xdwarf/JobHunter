@@ -8,6 +8,7 @@ Returns a list of job dictionaries with title, company, location, short_descript
 import requests
 from bs4 import BeautifulSoup
 from typing import List, Dict
+import sys
 
 
 def fetch_jobindex_jobs(search_term: str = "IT drift", limit: int = 10) -> List[Dict]:
@@ -131,9 +132,10 @@ def fetch_jobindex_jobs(search_term: str = "IT drift", limit: int = 10) -> List[
                     break
 
             except requests.exceptions.RequestException as e:
-                # Network-level error for this endpoint, try next endpoint or next query
+                # Network-level error for this endpoint (e.g., 404). Log to stderr and return an empty list
+                # so the caller can fall back to sample jobs. Do not let the exception bubble up and crash.
                 print(f"Error fetching Jobindex for query '{q}' from '{url}': {e}", file=sys.stderr)
-                continue
+                return []
             except Exception as e:
                 # Any other parsing error shouldn't crash the program
                 print(f"Error parsing Jobindex results for query '{q}': {e}", file=sys.stderr)
