@@ -184,15 +184,64 @@ def main():
     print("JobHunter - AI Job Agent", file=sys.stderr)
     print("=" * 50, file=sys.stderr)
     
-    # Fetch jobs
-    print("Fetching jobs from Jobindex...", file=sys.stderr)
-    jobs = fetch_jobindex_jobs(search_term="IT drift", limit=10)
-    
-    # Fallback to sample data if scraping fails
+    # Load settings (search terms, max jobs) from data/settings.json if present
+    settings_defaults = {
+        "search_terms": ["it drift", "systemadministrator", "it operations"],
+        "include_titles": ["IT-drift", "IT Operations", "Systemadministrator", "IT-ansvarlig"],
+        "exclude_titles": ["1st line", "Helpdesk", "Junior", "Trainee", "Developer"],
+        "max_jobs": 10
+    }
+
+    settings_path = os.path.join(os.getcwd(), 'data', 'settings.json')
+    settings = settings_defaults
+    try:
+        if os.path.exists(settings_path):
+            with open(settings_path, 'r', encoding='utf-8') as f:
+                settings = json.load(f) or settings_defaults
+        else:
+            # Create settings file with defaults for user convenience
+            os.makedirs(os.path.dirname(settings_path), exist_ok=True)
+            with open(settings_path, 'w', encoding='utf-8') as f:
+                json.dump(settings_defaults, f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        print(f"Error loading settings, using defaults: {e}", file=sys.stderr)
+        settings = settings_defaults
+
+    # Validate settings fields with safe fallbacks
+    search_terms = settings.get('search_terms') if isinstance(settings.get('search_terms'), list) else settings_defaults['search_terms']
+    max_jobs = settings.get('max_jobs') if isinstance(settings.get('max_jobs'), int) else settings_defaults['max_jobs']
+
+    print(f"Using settings: search_terms={search_terms}, max_jobs={max_jobs}", file=sys.stderr)
+
+    # Fetch jobs for each search term until we reach max_jobs
+    jobs = []
+    for term in search_terms:
+        if len(jobs) >= max_jobs:
+            break
+        try:
+            fetched = fetch_jobindex_jobs(search_term=term, limit=max_jobs)
+            if fetched:
+                jobs.extend(fetched)
+        except Exception as e:
+            # fetch_jobindex_jobs is expected to handle its own errors; log and continue
+            print(f"Error fetching jobs for term '{term}': {e}", file=sys.stderr)
+            continue
+
+    # Deduplicate by URL (basic) while preserving order
+    unique = []
+    seen_urls = set()
+    for j in jobs:
+        url = (j.get('url') or '').strip()
+        if url and url not in seen_urls:
+            unique.append(j)
+            seen_urls.add(url)
+    jobs = unique[:max_jobs]
+
+    # Fallback to sample data if scraping yields nothing
     if not jobs:
         print("Using sample job data", file=sys.stderr)
         jobs = get_sample_jobs()
-    
+
     print(f"Found {len(jobs)} jobs", file=sys.stderr)
     print("=" * 50, file=sys.stderr)
 

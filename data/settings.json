@@ -1,0 +1,17 @@
+{
+  "search_terms": ["it drift", "systemadministrator", "it operations"],
+  "include_titles": [
+    "IT-drift",
+    "IT Operations",
+    "Systemadministrator",
+    "IT-ansvarlig"
+  ],
+  "exclude_titles": [
+    "1st line",
+    "Helpdesk",
+    "Junior",
+    "Trainee",
+    "Developer"
+  ],
+  "max_jobs": 10
+}
