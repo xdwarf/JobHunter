@@ -35,11 +35,13 @@ TEMPLATE = """
       {% for job in jobs %}
       <div class="job">
         <div>
-          <a class="title" href="{{ job.url }}" target="_blank">{{ job.job_title }}</a>
-          <span class="score">Score: {{ "{:.2f}"|format(job.evaluation.score) }}</span>
+          <a class="title" href="{{ job.url }}" target="_blank">{{ job.job_title or '–' }}</a>
+          <!-- Avoid using Jinja string-formatting (|format or %) here as it can raise TypeError during rendering.
+               If you need rounding/formatting, prepare a display string in Python before rendering the template. -->
+          <span class="score">Score: {{ job.evaluation.score or "" }}</span>
         </div>
-        <div class="meta">{{ job.company }} — {{ job.location }} &nbsp;|&nbsp; <span class="{{ 'relevant' if job.evaluation.relevant else 'not-relevant' }}">{{ 'Relevant' if job.evaluation.relevant else 'Ikke relevant' }}</span></div>
-        <div class="reason">{{ job.evaluation.reason }}</div>
+        <div class="meta">{{ job.company or '–' }} — {{ job.location or '–' }} &nbsp;|&nbsp; <span class="{{ 'relevant' if job.evaluation.relevant else 'not-relevant' }}">{{ 'Relevant' if job.evaluation.relevant else 'Ikke relevant' }}</span></div>
+        <div class="reason">{{ job.evaluation.reason or "" }}</div>
       </div>
       {% endfor %}
 
